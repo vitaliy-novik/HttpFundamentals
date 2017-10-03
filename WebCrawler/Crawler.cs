@@ -13,19 +13,23 @@ namespace WebCrawler
 		private int depth;
 		private HttpClient client;
 		private HtmlParser parser;
+		private Verbose verbose;
+		private UriBuilder uriBuilder;
 
 		public event Action<Stream, string, string> OnRespose = (stream, url, statusCode) => { };
 
 
 		public Crawler(string url)
 		{
-			client = new HttpClient { BaseAddress = new UriBuilder(url).Uri };
+			this.uriBuilder = new UriBuilder(url);
+			client = new HttpClient { BaseAddress = this.uriBuilder.Uri };
 		}
 
-		public Crawler(string url, int depth) : this(url)
+		public Crawler(string url, int depth, Verbose verbose) : this(url)
 		{
 			this.url = url;
 			this.depth = depth;
+			this.verbose = verbose;
 		}
 
 		public void Start()

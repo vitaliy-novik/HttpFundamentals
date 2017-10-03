@@ -15,13 +15,15 @@ namespace LocalSite
 		private static FolderService folderService;
 		static void Main(string[] args)
 		{
+			UriBuilder b = new UriBuilder("/dsdfd/fdgs/fdf");
 			string url = RequestInput("Enter URL:", Crawler.ValidateUrl);
 			string path = RequestInput("Enter path:", FolderService.ValidatePath);
 			int depth = Int32.Parse(RequestInput("Enter depth:", Program.ValidateDepth));
+			Verbose verbose = (Verbose)GetVerboseSelection();
 
 			folderService = new FolderService(path);
 			folderService.CreateIfNotExists(path);
-			Crawler crawler = new Crawler(url, depth);
+			Crawler crawler = new Crawler(url, depth, verbose);
 
 			crawler.OnRespose += ProcessResponse;
 			crawler.Start();
@@ -30,7 +32,12 @@ namespace LocalSite
 
 		private static void ProcessResponse(Stream stream, string url, string statusCode)
 		{
-			string path = folderService.SaveFile(stream, url);
+			string path = string.Empty;
+			if (statusCode.Equals("OK", StringComparison.OrdinalIgnoreCase))
+			{
+				path = folderService.SaveFile(stream, url);
+			}
+			
 			WriteLine($"{url} - {statusCode} -> {path}");
 		}
 
@@ -69,6 +76,39 @@ namespace LocalSite
 			}
 
 			return isValid;
+		}
+
+		static int GetVerboseSelection()
+		{
+			List<string> verboses = Enum.GetNames(typeof(Verbose)).ToList();
+			WriteLine("Select verbose:");
+			int currentSelection = 0;
+			ConsoleKeyInfo key = new ConsoleKeyInfo();
+			while (key.Key != ConsoleKey.Enter)
+			{
+				for (int i = 0; i < verboses.Count; ++i)
+				{
+					WriteLine($"{GetSelector(currentSelection, i)} {verboses.ElementAt(i)}");
+				}
+				key = ReadKey(true);
+				if (key.Key == ConsoleKey.UpArrow)
+				{
+					currentSelection = (currentSelection - 1) % verboses.Count;
+				}
+				if (key.Key == ConsoleKey.DownArrow)
+				{
+					currentSelection = (currentSelection + 1) % verboses.Count;
+				}
+
+				SetCursorPosition(0, CursorTop - verboses.Count);
+			}
+
+			return currentSelection;
+		}
+
+		static string GetSelector(int currentSelector, int index)
+		{
+			return index == currentSelector ? " * " : "   ";
 		}
 	}
 }

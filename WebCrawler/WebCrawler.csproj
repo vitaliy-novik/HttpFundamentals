@@ -43,6 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StringComparerIgnoreWhiteSpaces.cs" />
+    <Compile Include="UriFactory.cs" />
+    <Compile Include="UriFilters\BaseFilter.cs" />
+    <Compile Include="UriFilters\ExtensionFilter.cs" />
+    <Compile Include="UriFilters\VerboseFilter.cs" />
+    <Compile Include="Verbose.cs" />
     <Compile Include="Crawler.cs" />
     <Compile Include="HtmlParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

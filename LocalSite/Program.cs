@@ -15,15 +15,15 @@ namespace LocalSite
 		private static FolderService folderService;
 		static void Main(string[] args)
 		{
-			UriBuilder b = new UriBuilder("/dsdfd/fdgs/fdf");
 			string url = RequestInput("Enter URL:", Crawler.ValidateUrl);
 			string path = RequestInput("Enter path:", FolderService.ValidatePath);
 			int depth = Int32.Parse(RequestInput("Enter depth:", Program.ValidateDepth));
 			Verbose verbose = (Verbose)GetVerboseSelection();
+			string extensions = RequestInput("Enter comma-separated lists of file extensions:", input => true);
 
 			folderService = new FolderService(path);
 			folderService.CreateIfNotExists(path);
-			Crawler crawler = new Crawler(url, depth, verbose);
+			Crawler crawler = new Crawler(url, depth, verbose, extensions);
 
 			crawler.OnRespose += ProcessResponse;
 			crawler.Start();

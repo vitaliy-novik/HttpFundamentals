@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using WebCrawler.UriFilters;
 
 namespace WebCrawler
 {
@@ -11,25 +12,31 @@ namespace WebCrawler
 	{
 		private string url;
 		private int depth;
+		private string extensions;
 		private HttpClient client;
 		private HtmlParser parser;
 		private Verbose verbose;
-		private UriBuilder uriBuilder;
+		private UriBuilder baseUri;
+		private ExtensionFilter extensionFilter;
+		private VerboseFilter verboseFilter;
 
 		public event Action<Stream, string, string> OnRespose = (stream, url, statusCode) => { };
 
 
 		public Crawler(string url)
 		{
-			this.uriBuilder = new UriBuilder(url);
-			client = new HttpClient { BaseAddress = this.uriBuilder.Uri };
+			this.baseUri = new UriBuilder(url);
+			client = new HttpClient { BaseAddress = this.baseUri.Uri };
 		}
 
-		public Crawler(string url, int depth, Verbose verbose) : this(url)
+		public Crawler(string url, int depth, Verbose verbose, string extensions) : this(url)
 		{
 			this.url = url;
 			this.depth = depth;
 			this.verbose = verbose;
+			this.extensions = extensions;
+			this.extensionFilter = new ExtensionFilter(extensions);
+			this.verboseFilter = new VerboseFilter(verbose, baseUri.Uri);
 		}
 
 		public void Start()
@@ -38,7 +45,6 @@ namespace WebCrawler
 			for (int curDepth = 0; curDepth <= this.depth; curDepth++)
 			{
 				pages = this.DownloadDepth(pages);
-				pages.RemoveAll(s => s.Contains("javascript:"));
 			}
 		}
 
@@ -55,6 +61,11 @@ namespace WebCrawler
 
 		public List<string> GetPage(string url)
 		{
+			if (!this.verboseFilter.IsValid(url))
+			{
+				return new List<string>();
+			}
+
 			HttpResponseMessage response = client.GetAsync(url).Result;
 			parser = new HtmlParser(response.Content.ReadAsStringAsync().Result);
 			List<string> files = parser.GetStylesheets().Union(parser.GetScripts()).Union(parser.GetImages()).ToList();
@@ -86,6 +97,11 @@ namespace WebCrawler
 
 		public void GetFile(string path)
 		{
+			if (!this.extensionFilter.IsValid(path))
+			{
+				return;
+			}
+
 			UriBuilder builder;
 			string fileName = string.Empty;
 			if (Uri.IsWellFormedUriString(path, UriKind.RelativeOrAbsolute))

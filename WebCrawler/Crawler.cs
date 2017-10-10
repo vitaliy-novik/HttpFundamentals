@@ -16,7 +16,7 @@ namespace WebCrawler
 		private HttpClient client;
 		private HtmlParser parser;
 		private Verbose verbose;
-		private UriBuilder baseUri;
+		private Uri baseUri;
 		private ExtensionFilter extensionFilter;
 		private VerboseFilter verboseFilter;
 
@@ -25,8 +25,8 @@ namespace WebCrawler
 
 		public Crawler(string url)
 		{
-			this.baseUri = new UriBuilder(url);
-			client = new HttpClient { BaseAddress = this.baseUri.Uri };
+			this.baseUri = new Uri(url);
+			client = new HttpClient { BaseAddress = this.baseUri };
 		}
 
 		public Crawler(string url, int depth, Verbose verbose, string extensions) : this(url)
@@ -36,7 +36,7 @@ namespace WebCrawler
 			this.verbose = verbose;
 			this.extensions = extensions;
 			this.extensionFilter = new ExtensionFilter(extensions);
-			this.verboseFilter = new VerboseFilter(verbose, baseUri.Uri);
+			this.verboseFilter = new VerboseFilter(verbose, baseUri);
 		}
 
 		public void Start()
@@ -44,11 +44,11 @@ namespace WebCrawler
 			List<string> pages = new List<string>() { string.Empty };
 			for (int curDepth = 0; curDepth <= this.depth; curDepth++)
 			{
-				pages = this.DownloadDepth(pages);
+				pages = this.DownloadDepth(this.baseUri, pages);
 			}
 		}
 
-		public List<string> DownloadDepth(List<string> links)
+		public List<string> DownloadDepth(Uri currentUri, List<string> links)
 		{
 			List<string> newDepthLinks = new List<string>();
 			foreach (var link in links)

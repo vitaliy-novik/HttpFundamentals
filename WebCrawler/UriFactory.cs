@@ -6,6 +6,31 @@ namespace WebCrawler
 	{
 		internal static Uri Create(string uriString)
 		{
+			if (!uriString.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+			{
+				uriString = "http:\\" + uriString;
+			}
+
+			if (!Uri.IsWellFormedUriString(uriString, UriKind.RelativeOrAbsolute))
+			{
+				throw new ArgumentException("Uri string is not valid");
+			}
+
+			Uri uri;
+			if (Uri.IsWellFormedUriString(uriString, UriKind.Absolute))
+			{
+				uri = new Uri(uriString, UriKind.Absolute);
+			}
+			else
+			{
+				uri = new Uri(uriString, UriKind.Relative);
+			}
+
+			return uri;
+		}
+
+		internal static Uri Create(string host, string uriString)
+		{
 			if (!Uri.IsWellFormedUriString(uriString, UriKind.RelativeOrAbsolute))
 			{
 				throw new ArgumentException("Uri string is not valid");

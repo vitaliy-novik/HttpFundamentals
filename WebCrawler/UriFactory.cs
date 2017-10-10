@@ -8,7 +8,7 @@ namespace WebCrawler
 		{
 			if (!uriString.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
 			{
-				uriString = "http:\\" + uriString;
+				uriString = "http://" + uriString;
 			}
 
 			if (!Uri.IsWellFormedUriString(uriString, UriKind.RelativeOrAbsolute))
@@ -47,6 +47,21 @@ namespace WebCrawler
 			}
 
 			return uri;
+		}
+
+		internal static Uri Create(Uri absolute, string uriString)
+		{
+			if (Uri.IsWellFormedUriString(uriString, UriKind.Absolute))
+			{
+				return new Uri(uriString);
+			}
+
+			if (Uri.IsWellFormedUriString(uriString, UriKind.Relative))
+			{
+				return new Uri(absolute, uriString);
+			}
+
+			return absolute;
 		}
 	}
 }

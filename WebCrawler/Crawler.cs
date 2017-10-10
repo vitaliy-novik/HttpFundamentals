@@ -25,7 +25,7 @@ namespace WebCrawler
 
 		public Crawler(string url)
 		{
-			this.baseUri = new Uri(url);
+			this.baseUri = UriFactory.Create(url);
 			client = new HttpClient { BaseAddress = this.baseUri };
 		}
 
@@ -48,29 +48,30 @@ namespace WebCrawler
 			}
 		}
 
-		public List<string> DownloadDepth(Uri currentUri, List<string> links)
+		public List<Uri> DownloadDepth(Uri currentUri, List<string> links)
 		{
-			List<string> newDepthLinks = new List<string>();
+			List<Uri> newDepthLinks = new List<Uri>();
 			foreach (var link in links)
 			{
-				newDepthLinks.AddRange(this.GetPage(link));
+				Uri uri = UriFactory.Create(currentUri, link);
+				newDepthLinks.AddRange(this.GetPage(uri));
 			}
 
 			return newDepthLinks;
 		}
 
-		public List<string> GetPage(string url)
+		public List<Uri> GetPage(Uri uri)
 		{
-			if (!this.verboseFilter.IsValid(url))
+			if (!this.verboseFilter.IsValid(uri))
 			{
-				return new List<string>();
+				return new List<Uri>();
 			}
 
-			HttpResponseMessage response = client.GetAsync(url).Result;
+			HttpResponseMessage response = client.GetAsync(uri).Result;
 			parser = new HtmlParser(response.Content.ReadAsStringAsync().Result);
 			List<string> files = parser.GetStylesheets().Union(parser.GetScripts()).Union(parser.GetImages()).ToList();
-			OnRespose(response.Content.ReadAsStreamAsync().Result, url, response.StatusCode.ToString());
-			List<string> links = parser.GetLinks().ToList();
+			OnRespose(response.Content.ReadAsStreamAsync().Result, this.baseUri.MakeRelativeUri(uri).ToString(), response.StatusCode.ToString());
+			List<Uri> links = parser.GetLinks().Select(link => UriFactory.Create(link)).Where(u => this.extensionFilter.IsValid(u)).ToList();
 			foreach (var file in files)
 			{
 				GetFile(file);

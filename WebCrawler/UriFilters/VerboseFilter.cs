@@ -17,23 +17,21 @@ namespace WebCrawler.UriFilters
 			this.BaseUri = uriBuilder;
 		}
 
-		internal override bool IsValid(string uri)
+		internal override bool IsValid(Uri uri)
 		{
 			if (!base.IsValid(uri))
 			{
 				return false;
 			}
-
-			Uri parsedUri = UriFactory.Create(uri);
 			
 			switch (this.Verbose)
 			{
 				case Verbose.Unlimited:
 					return true;
 				case Verbose.Domain:
-					return IsDomainEquals(parsedUri);
+					return IsDomainEquals(uri);
 				case Verbose.Path:
-					return IsPathEquals(parsedUri);
+					return IsPathEquals(uri);
 				default:
 					return true;
 			}

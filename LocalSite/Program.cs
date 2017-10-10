@@ -15,9 +15,9 @@ namespace LocalSite
 		private static FolderService folderService;
 		static void Main(string[] args)
 		{
-			string url = RequestInput("Enter URL:", Crawler.ValidateUrl);
-			string path = RequestInput("Enter path:", FolderService.ValidatePath);
-			int depth = Int32.Parse(RequestInput("Enter depth:", Program.ValidateDepth));
+			string url = "google.com";// RequestInput("Enter URL:", Crawler.ValidateUrl);
+			string path = "D:/google";// RequestInput("Enter path:", FolderService.ValidatePath);
+			int depth = 1;// Int32.Parse(RequestInput("Enter depth:", Program.ValidateDepth));
 			Verbose verbose = (Verbose)GetVerboseSelection();
 			string extensions = RequestInput("Enter comma-separated lists of file extensions:", input => true);
 

@@ -15,14 +15,14 @@ namespace WebCrawler.UriFilters
 			Extensions = extensions.Split(',').ToList();
 		}
 
-		internal override bool IsValid(string uri)
+		internal override bool IsValid(Uri uri)
 		{
 			if (!base.IsValid(uri))
 			{
 				return false;
 			}
 
-			return Extensions.Any(ext => uri.EndsWith("." + ext, StringComparison.OrdinalIgnoreCase));
+			return Extensions.Any(ext => uri.AbsolutePath.EndsWith("." + ext, StringComparison.OrdinalIgnoreCase));
 		}
 	}
 }

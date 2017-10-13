@@ -7,7 +7,7 @@ namespace WebCrawler.UriFilters
 	{
 		internal virtual bool IsValid(Uri uri)
 		{
-			return !(uri.Scheme.Equals("data", StringComparison.OrdinalIgnoreCase)) || 
+			return !(uri.Scheme.Equals("data", StringComparison.OrdinalIgnoreCase) || 
 					uri.Scheme.Equals("javascript", StringComparison.OrdinalIgnoreCase));
 		}
 	}

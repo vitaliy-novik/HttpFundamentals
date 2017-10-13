@@ -41,14 +41,14 @@ namespace WebCrawler
 
 		public void Start()
 		{
-			List<string> pages = new List<string>() { string.Empty };
+			List<Uri> pages = new List<Uri>() { this.baseUri };
 			for (int curDepth = 0; curDepth <= this.depth; curDepth++)
 			{
 				pages = this.DownloadDepth(this.baseUri, pages);
 			}
 		}
 
-		public List<Uri> DownloadDepth(Uri currentUri, List<string> links)
+		public List<Uri> DownloadDepth(Uri currentUri, List<Uri> links)
 		{
 			List<Uri> newDepthLinks = new List<Uri>();
 			foreach (var link in links)
@@ -69,9 +69,9 @@ namespace WebCrawler
 
 			HttpResponseMessage response = client.GetAsync(uri).Result;
 			parser = new HtmlParser(response.Content.ReadAsStringAsync().Result);
-			List<string> files = parser.GetStylesheets().Union(parser.GetScripts()).Union(parser.GetImages()).ToList();
-			OnRespose(response.Content.ReadAsStreamAsync().Result, this.baseUri.MakeRelativeUri(uri).ToString(), response.StatusCode.ToString());
-			List<Uri> links = parser.GetLinks().Select(link => UriFactory.Create(link)).Where(u => this.extensionFilter.IsValid(u)).ToList();
+			List<Uri> files = parser.GetStylesheets().Union(parser.GetScripts()).Union(parser.GetImages()).Select(l => UriFactory.Create(this.baseUri, l)).ToList();
+			OnRespose(response.Content.ReadAsStreamAsync().Result, uri.AbsolutePath.Replace(this.baseUri.AbsolutePath, string.Empty), response.StatusCode.ToString());
+			List<Uri> links = parser.GetLinks().Select(link => UriFactory.Create(this.baseUri, link)).Where(u => this.verboseFilter.IsValid(u)).ToList();
 			foreach (var file in files)
 			{
 				GetFile(file);
@@ -96,31 +96,14 @@ namespace WebCrawler
 				});
 		}
 
-		public void GetFile(string path)
+		public void GetFile(Uri path)
 		{
 			if (!this.extensionFilter.IsValid(path))
 			{
 				return;
 			}
 
-			UriBuilder builder;
-			string fileName = string.Empty;
-			if (Uri.IsWellFormedUriString(path, UriKind.RelativeOrAbsolute))
-			{
-				if (this.IsAbsoluteUrl(path))
-				{
-					builder = new UriBuilder(path);
-				}
-				else
-				{
-					builder = new UriBuilder(new Uri(client.BaseAddress, path));
-				}
-				fileName = builder.Path;
-			}
-			else
-			{
-				return;
-			}
+			string fileName = path.AbsolutePath.Replace(this.baseUri.AbsolutePath, string.Empty);
 
 			HttpResponseMessage response = client.GetAsync(path).Result;
 			if (!response.StatusCode.Equals(HttpStatusCode.OK))

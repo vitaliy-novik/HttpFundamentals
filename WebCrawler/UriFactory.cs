@@ -29,24 +29,14 @@ namespace WebCrawler
 			return uri;
 		}
 
-		internal static Uri Create(string host, string uriString)
+		internal static Uri Create(Uri absolute, Uri uri)
 		{
-			if (!Uri.IsWellFormedUriString(uriString, UriKind.RelativeOrAbsolute))
+			if (uri.IsAbsoluteUri)
 			{
-				throw new ArgumentException("Uri string is not valid");
+				return uri;
 			}
 
-			Uri uri;
-			if (Uri.IsWellFormedUriString(uriString, UriKind.Absolute))
-			{
-				uri = new Uri(uriString, UriKind.Absolute);
-			}
-			else
-			{
-				uri = new Uri(uriString, UriKind.Relative);
-			}
-
-			return uri;
+			return new Uri(absolute, uri);
 		}
 
 		internal static Uri Create(Uri absolute, string uriString)
